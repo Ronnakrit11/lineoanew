@@ -18,7 +18,8 @@ export async function GET() {
         companyName: true,
         channelAccessToken: true,
         channelSecret: true,
-        active: true
+        active: true,
+        imageUrl:true,
       }
     });
     return NextResponse.json(accounts);

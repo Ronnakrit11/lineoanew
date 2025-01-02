@@ -33,9 +33,11 @@ export async function PATCH(
   try {
     const { id } = params;
     const body = await request.json();
+    const  {imageUrl} = body;
     
     const result = await updateLineAccount(id, {
-      companyName: body.companyName?.trim() || null
+      companyName: body.companyName?.trim() || null,
+      imageUrl:imageUrl || null,
     });
 
     if (!result.success) {
