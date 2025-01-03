@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { pusherClient, PUSHER_EVENTS} from '@/lib/pusher';
-import { WidgetMessage } from '../types/widget';
+import { WidgetMessage, WidgetUser } from '../types/widget';
 
 export function useChatWidget() {
   const [messages, setMessages] = useState<WidgetMessage[]>([]);
@@ -38,12 +38,29 @@ export function useChatWidget() {
   }, []);
 
   const sendMessage = useCallback(async (content: string) => {
+    // Get or fetch client IP
+    let userIp: string;
+    const storedIp = localStorage.getItem('widget_user_ip');
+    
+    if (!storedIp) {
+      const response = await fetch('/api/chat/widget/ip');
+      const data = await response.json();
+      userIp = data.ip;
+      localStorage.setItem('widget_user_ip', userIp);
+    } else {
+      userIp = storedIp;
+    }
+    
+    const userId = `widget-user-${userIp}`;
+
     const tempMessage: WidgetMessage = {
       id: `temp-${Date.now()}`,
       content,
       sender: 'USER',
       timestamp: new Date(),
-      status: 'SENT'
+      status: 'SENT',
+      userId,
+      ip: userIp
     };
 
     setMessages(prev => [...prev, tempMessage]);

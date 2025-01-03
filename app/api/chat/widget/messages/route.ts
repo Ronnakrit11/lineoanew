@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { pusherServer, PUSHER_EVENTS, PUSHER_CHANNELS } from '@/lib/pusher';
 import { prisma } from '@/lib/prisma';
+import { getClientIp } from '@/lib/utils/ip';
 import { broadcastMessageUpdate } from '@/lib/messageService';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { content } = body;
+    const ip = getClientIp(request) || 'unknown';
+    const userId = `widget-user-${ip}`;
 
     if (!content?.trim()) {
       return NextResponse.json(
@@ -19,7 +22,7 @@ export async function POST(request: NextRequest) {
     let conversation = await prisma.conversation.findFirst({
       where: {
         channelId: 'widget',
-        userId: 'widget-user',
+        userId,
         platform: 'LINE'
       }
     });
@@ -28,7 +31,7 @@ export async function POST(request: NextRequest) {
       conversation = await prisma.conversation.create({
         data: {
           channelId: 'widget',
-          userId: 'widget-user',
+          userId,
           platform: 'LINE'
         }
       });
@@ -39,7 +42,8 @@ export async function POST(request: NextRequest) {
         content,
         sender: 'USER',
         platform: 'LINE',
-        conversationId: conversation.id
+        conversationId: conversation.id,
+        chatId: ip
       }
     });
     // Broadcast to widget channel
