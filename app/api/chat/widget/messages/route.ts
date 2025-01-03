@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { pusherServer, PUSHER_EVENTS, PUSHER_CHANNELS } from '@/lib/pusher';
 import { prisma } from '@/lib/prisma';
 import { getClientIp } from '@/lib/utils/ip';
-import { broadcastMessageUpdate } from '@/lib/messageService';
+
 
 export async function POST(request: NextRequest) {
   try {
