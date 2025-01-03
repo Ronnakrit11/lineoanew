@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { pusherClient, PUSHER_EVENTS, PUSHER_CHANNELS } from '@/lib/pusher';
+import { pusherClient, PUSHER_EVENTS} from '@/lib/pusher';
 import { WidgetMessage } from '../types/widget';
 
 export function useChatWidget() {
