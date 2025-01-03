@@ -1,46 +1,49 @@
 import { useState, useEffect, useCallback } from 'react';
 import { pusherClient, PUSHER_EVENTS} from '@/lib/pusher';
 import { WidgetMessage } from '../types/widget';
+import { Message } from '@prisma/client';
 
 export function useChatWidget() {
   const [messages, setMessages] = useState<WidgetMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
-  // Load initial messages
   useEffect(() => {
     async function fetchMessages() {
       try {
-        // Get user IP first
         const ipResponse = await fetch('/api/chat/widget/ip');
         const { ip } = await ipResponse.json();
         localStorage.setItem('widget_user_ip', ip);
-        const userId = `widget-user-${ip}`;
 
-        // Then fetch messages
         const response = await fetch('/api/chat/widget/messages');
         if (!response.ok) throw new Error('Failed to fetch messages');
-        const { conversations } = await response.json();
+        const data = await response.json();
         
-        // Find user's conversation
-        const userConversation = conversations.find(
-          (conv: any) => conv.userId === userId
+        // Convert messages to WidgetMessage format
+        const formattedMessages: WidgetMessage[] = data.conversations.flatMap((conv: any) => 
+          conv.messages.map((msg: Message) => ({
+            id: msg.id,
+            content: msg.content,
+            sender: msg.sender,
+            timestamp: new Date(msg.timestamp),
+            status: 'DELIVERED',
+            userId: conv.userId,
+            ip: conv.chatId || ip
+          }))
         );
-        
-        // Set messages from user's conversation
-        const userMessages = userConversation?.messages || [];
-        setMessages(userMessages.map((msg: any) => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        })));
+
+        // Sort messages by timestamp
+        setMessages(formattedMessages.sort((a: WidgetMessage, b: WidgetMessage) => 
+          a.timestamp.getTime() - b.timestamp.getTime()
+        ));
       } catch (error) {
         console.error('Error fetching messages:', error);
       }
     }
+
     fetchMessages();
   }, []);
 
   useEffect(() => {
-    // Subscribe to private channel
     const channel = pusherClient.subscribe(`private-widget-chat`);
 
     channel.bind('pusher:subscription_succeeded', () => {
@@ -48,18 +51,15 @@ export function useChatWidget() {
     });
 
     channel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, (message: WidgetMessage) => {
-      // Deduplicate messages by ID
       setMessages(prev => {
         const exists = prev.some(m => {
-          // Check for exact ID match
           if (m.id === message.id) return true;
-          // Check for temp message with same content (for user messages)
           if (message.sender === 'USER' && m.id.startsWith('temp-') && m.content === message.content) return true;
           return false;
         });
+        
         if (exists) return prev;
 
-        // Sort messages by timestamp
         return [...prev, {
           ...message,
           timestamp: new Date(message.timestamp)
