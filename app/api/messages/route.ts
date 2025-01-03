@@ -39,6 +39,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Create bot message
+    let messageSent = false;
+
     const botMessage = await prisma.message.create({
       data: {
         conversationId,
@@ -53,22 +55,24 @@ export async function POST(request: NextRequest) {
     if (conversation.channelId === 'widget') {
       // Broadcast to widget channel
       await pusherServer.trigger(
-        'private-widget-chat',
+        `private-widget-chat`,
         PUSHER_EVENTS.MESSAGE_RECEIVED,
         {
           id: botMessage.id,
           content: botMessage.content,
           sender: botMessage.sender,
           timestamp: botMessage.timestamp,
+          conversationId: conversation.id,
+          platform: 'WIDGET',
           status: 'DELIVERED'
         }
       );
+      messageSent = true; // Mark as sent for widget platform
     }
 
     console.log('Created bot message:', botMessage);
 
     // Send to platform
-    let messageSent = false;
     if (platform === 'LINE' && conversation.channelId !== 'widget') {
       console.log('Sending LINE message:', {
         userId: conversation.userId,

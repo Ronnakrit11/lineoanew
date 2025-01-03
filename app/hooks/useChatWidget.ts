@@ -50,13 +50,20 @@ export function useChatWidget() {
     channel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, (message: WidgetMessage) => {
       // Deduplicate messages by ID
       setMessages(prev => {
-        const exists = prev.some(m => m.id === message.id || 
-          (m.id.startsWith('temp-') && m.content === message.content));
+        const exists = prev.some(m => {
+          // Check for exact ID match
+          if (m.id === message.id) return true;
+          // Check for temp message with same content (for user messages)
+          if (message.sender === 'USER' && m.id.startsWith('temp-') && m.content === message.content) return true;
+          return false;
+        });
         if (exists) return prev;
+
+        // Sort messages by timestamp
         return [...prev, {
           ...message,
           timestamp: new Date(message.timestamp)
-        }];
+        }].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       });
     });
 
