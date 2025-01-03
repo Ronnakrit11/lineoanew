@@ -10,10 +10,25 @@ export function useChatWidget() {
   useEffect(() => {
     async function fetchMessages() {
       try {
+        // Get user IP first
+        const ipResponse = await fetch('/api/chat/widget/ip');
+        const { ip } = await ipResponse.json();
+        localStorage.setItem('widget_user_ip', ip);
+        const userId = `widget-user-${ip}`;
+
+        // Then fetch messages
         const response = await fetch('/api/chat/widget/messages');
         if (!response.ok) throw new Error('Failed to fetch messages');
-        const data = await response.json();
-        setMessages(data.map((msg: any) => ({
+        const { conversations } = await response.json();
+        
+        // Find user's conversation
+        const userConversation = conversations.find(
+          (conv: any) => conv.userId === userId
+        );
+        
+        // Set messages from user's conversation
+        const userMessages = userConversation?.messages || [];
+        setMessages(userMessages.map((msg: any) => ({
           ...msg,
           timestamp: new Date(msg.timestamp)
         })));

@@ -97,20 +97,26 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    // Get recent messages
-    const messages = await prisma.message.findMany({
+    const messages = await prisma.conversation.findMany({
       where: {
-        conversation: {
-          channelId: 'widget'
+        channelId: 'widget',
+        platform: 'WIDGET'
+      },
+      include: {
+        messages: {
+          orderBy: {
+            timestamp: 'desc'
+          }
         }
       },
       orderBy: {
-        timestamp: 'desc'
-      },
-      take: 50
+        updatedAt: 'desc'
+      }
     });
 
-    return NextResponse.json(messages);
+    return NextResponse.json({
+      conversations: messages
+    });
   } catch (error) {
     console.error('Error fetching widget messages:', error);
     return NextResponse.json(
