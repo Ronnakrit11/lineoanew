@@ -1,5 +1,5 @@
 export type MessageStatus = 'SENT' | 'DELIVERED' | 'READ' | 'ERROR';
-export type MessageSender = 'USER' | 'ADMIN';
+export type MessageSender = 'USER' | 'BOT' | 'ADMIN';
 
 export interface WidgetUser {
   id: string;
@@ -17,6 +17,7 @@ export interface WidgetMessage {
   status?: MessageStatus;
   userId: string;
   ip: string;
+  platform?: string;
 }
 
 export interface WidgetUser {

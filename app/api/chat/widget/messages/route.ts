@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       where: {
         channelId: 'widget',
         userId,
-        platform: 'LINE'
+        platform: 'WIDGET'
       }
     });
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         data: {
           channelId: 'widget',
           userId,
-          platform: 'LINE'
+          platform: 'WIDGET'
         }
       });
     }
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       data: {
         content,
         sender: 'USER',
-        platform: 'LINE',
+        platform: 'WIDGET',
         conversationId: conversation.id,
         chatId: ip
       }

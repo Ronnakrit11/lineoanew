@@ -160,6 +160,7 @@ model InvoiceItem {
 enum Platform {
   LINE
   FACEBOOK
+  WIDGET
 }
 
 enum SenderType {
