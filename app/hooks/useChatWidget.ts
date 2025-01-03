@@ -6,6 +6,24 @@ export function useChatWidget() {
   const [messages, setMessages] = useState<WidgetMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
 
+  // Load initial messages
+  useEffect(() => {
+    async function fetchMessages() {
+      try {
+        const response = await fetch('/api/chat/widget/messages');
+        if (!response.ok) throw new Error('Failed to fetch messages');
+        const data = await response.json();
+        setMessages(data.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        })));
+      } catch (error) {
+        console.error('Error fetching messages:', error);
+      }
+    }
+    fetchMessages();
+  }, []);
+
   useEffect(() => {
     // Subscribe to private channel
     const channel = pusherClient.subscribe(`private-widget-chat`);
@@ -20,8 +38,8 @@ export function useChatWidget() {
         const exists = prev.some(m => m.id === message.id);
         if (exists) return prev;
         return [...prev, {
-        ...message,
-        timestamp: new Date(message.timestamp)
+          ...message,
+          timestamp: new Date(message.timestamp)
         }];
       });
     });

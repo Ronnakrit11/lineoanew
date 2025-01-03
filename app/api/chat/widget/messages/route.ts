@@ -24,6 +24,11 @@ export async function POST(request: NextRequest) {
         channelId: 'widget',
         userId,
         platform: 'WIDGET'
+      },
+      include: {
+        messages: {
+          orderBy: { timestamp: 'desc' }
+        }
       }
     });
 
@@ -33,9 +38,13 @@ export async function POST(request: NextRequest) {
           channelId: 'widget',
           userId,
           platform: 'WIDGET'
+        },
+        include: {
+          messages: true
         }
       });
     }
+
     // Create message in database
     const message = await prisma.message.create({
       data: {
@@ -46,6 +55,7 @@ export async function POST(request: NextRequest) {
         chatId: ip
       }
     });
+
     // Broadcast to widget channel
     await pusherServer.trigger(
       `private-widget-chat`,
