@@ -9,19 +9,21 @@ export function useChatWidget() {
   useEffect(() => {
     // Subscribe to private channel
     const channel = pusherClient.subscribe(`private-widget-chat`);
-    console.log('Subscribing to widget channel');
 
     channel.bind('pusher:subscription_succeeded', () => {
       setIsConnected(true);
-      console.log('Successfully subscribed to channel');
     });
 
     channel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, (message: WidgetMessage) => {
-      console.log('Received message:', message);
-      setMessages(prev => [...prev, {
+      // Deduplicate messages by ID
+      setMessages(prev => {
+        const exists = prev.some(m => m.id === message.id);
+        if (exists) return prev;
+        return [...prev, {
         ...message,
         timestamp: new Date(message.timestamp)
-      }]);
+        }];
+      });
     });
 
     channel.bind('pusher:subscription_error', (error: any) => {
