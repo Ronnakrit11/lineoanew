@@ -50,7 +50,8 @@ export function useChatWidget() {
     channel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, (message: WidgetMessage) => {
       // Deduplicate messages by ID
       setMessages(prev => {
-        const exists = prev.some(m => m.id === message.id);
+        const exists = prev.some(m => m.id === message.id || 
+          (m.id.startsWith('temp-') && m.content === message.content));
         if (exists) return prev;
         return [...prev, {
           ...message,

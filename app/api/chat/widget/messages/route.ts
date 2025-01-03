@@ -52,7 +52,8 @@ export async function POST(request: NextRequest) {
         sender: 'USER',
         platform: 'WIDGET',
         conversationId: conversation.id,
-        chatId: ip
+        chatId: ip,
+        timestamp: new Date()
       }
     });
 
@@ -65,25 +66,52 @@ export async function POST(request: NextRequest) {
         content: message.content,
         sender: message.sender,
         timestamp: message.timestamp,
+        conversationId: conversation.id,
+        platform: 'WIDGET',
         status: 'DELIVERED'
       }
     );
 
     // Broadcast to admin channel
     await pusherServer.trigger(
-      `private-${PUSHER_CHANNELS.CHAT}`,
+      PUSHER_CHANNELS.CHAT,
       PUSHER_EVENTS.MESSAGE_RECEIVED,
       {
         id: message.id,
         content: message.content,
         sender: message.sender,
         timestamp: message.timestamp,
+        conversationId: conversation.id,
+        platform: 'WIDGET',
+        chatId: ip,
         status: 'DELIVERED'
       }
     );
 
-    // Broadcast conversation update
-    await broadcastMessageUpdate(conversation.id);
+    // Get updated conversation with messages
+    const updatedConversation = await prisma.conversation.findUnique({
+      where: { id: conversation.id },
+      include: {
+        messages: {
+          orderBy: { timestamp: 'desc' }
+        }
+      }
+    });
+
+    // Broadcast conversation update to admin channel
+    if (updatedConversation) {
+      await pusherServer.trigger(
+        PUSHER_CHANNELS.CHAT,
+        PUSHER_EVENTS.CONVERSATION_UPDATED,
+        {
+          ...updatedConversation,
+          messages: updatedConversation.messages.map(msg => ({
+            ...msg,
+            timestamp: msg.timestamp.toISOString()
+          }))
+        }
+      );
+    }
 
     return NextResponse.json(message);
   } catch (error) {
