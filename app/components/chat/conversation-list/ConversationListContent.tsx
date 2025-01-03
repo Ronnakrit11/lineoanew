@@ -18,15 +18,20 @@ export function ConversationListContent({
   onSelect,
   selectedAccountId
 }: ConversationListContentProps) {
+  // Filter conversations to include both LINE and WEBSITE platforms
+  const filteredConversations = selectedAccountId 
+    ? conversations.filter(conv => conv.lineAccountId === selectedAccountId)
+    : conversations;
+
   // Show empty state if no conversations match the current filter
-  if (conversations.length === 0) {
+  if (filteredConversations.length === 0) {
     return <EmptyState selectedAccountId={selectedAccountId} />;
   }
 
   return (
     <ScrollArea className="flex-1">
       <div className="divide-y divide-slate-200">
-        {conversations.map((conversation) => (
+        {filteredConversations.map((conversation) => (
           <React.Fragment key={conversation.id}>
             <ConversationPreview
               conversation={conversation}
