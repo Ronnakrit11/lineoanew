@@ -28,7 +28,7 @@ model LineAccount {
   id                 String         @id @default(cuid())
   name               String
   companyName        String?
-  imageUrl           String?
+ imageUrl           String?
   channelAccessToken String         @unique
   channelSecret      String
   active            Boolean        @default(true)
@@ -40,15 +40,16 @@ model LineAccount {
   quotations       Quotation[]
   invoices         Invoice[]
 
+  @@index([id,name])
+
   @@index([active])
-  @@index([id, name])
 }
 
 // ======= Chat & Messaging Models =======
 model Conversation {
   id            String       @id @default(cuid())
   platform      Platform
-  channelId     String      // Stores chat identifier (user/room/group/website)
+  channelId     String      // Stores chat identifier (user/room/group)
   userId        String      // User who initiated the conversation
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -62,7 +63,7 @@ model Conversation {
   @@index([platform, updatedAt])
   @@index([userId, platform])
 }
-
+// Update Message model to include base64 field for images
 model Message {
   id             String       @id @default(cuid())
   content        String       @db.Text
@@ -70,9 +71,9 @@ model Message {
   timestamp      DateTime     @default(now())
   platform       Platform
   externalId     String?      @unique
-  chatType       String?      // Type of chat: 'user', 'group', 'room', 'website'
+  chatType       String?      // Type of chat: 'user', 'group', 'room'
   chatId         String?      // Specific chat identifier
-  imageBase64    String?      @db.Text
+  imageBase64    String?      @db.Text  // New field for storing base64 image data
   
   // Relationships
   conversation   Conversation @relation(fields: [conversationId], references: [id])
@@ -89,20 +90,20 @@ model Quotation {
   number        String          @unique
   customerName  String
   total         Float
-  status        DocumentStatus  @default(DRAFT)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  status        DocumentStatus @default(DRAFT)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   
   // Relationships
   items         QuotationItem[]
-  lineAccount   LineAccount     @relation(fields: [lineAccountId], references: [id])
+  lineAccount   LineAccount    @relation(fields: [lineAccountId], references: [id])
   lineAccountId String
-  invoice       Invoice?        @relation(fields: [invoiceId], references: [id])
+  invoice       Invoice?       @relation(fields: [invoiceId], references: [id])
   invoiceId     String?
 
   @@index([lineAccountId])
   @@index([createdAt])
-  @@index([customerName, total])
+  @@index([customerName,total])
 }
 
 model QuotationItem {
@@ -124,15 +125,15 @@ model Invoice {
   number        String          @unique
   customerName  String
   total         Float
-  status        DocumentStatus  @default(DRAFT)
+  status        DocumentStatus @default(DRAFT)
   dueDate       DateTime
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
   
   // Relationships
   items         InvoiceItem[]
   quotations    Quotation[]
-  lineAccount   LineAccount     @relation(fields: [lineAccountId], references: [id])
+  lineAccount   LineAccount    @relation(fields: [lineAccountId], references: [id])
   lineAccountId String
 
   @@index([lineAccountId])
@@ -159,7 +160,6 @@ model InvoiceItem {
 enum Platform {
   LINE
   FACEBOOK
-  WEBSITE
 }
 
 enum SenderType {

@@ -4,7 +4,6 @@ import { PricingCard } from './components/PricingCard';
 import { FadeIn } from './components/animations/FadeIn';
 import { FloatingCard } from './components/animations/FloatingCard';
 import { GradientText } from './components/animations/GradientText';
-import { ChatWidget } from './components/ChatWidget';
 
 // Define pricing plans data
 const pricingPlans = [
@@ -104,9 +103,6 @@ export default function HomePage() {
         {/* Footer Gradient */}
         <div className="h-32 bg-gradient-to-t from-purple-900/20 via-transparent to-transparent" />
       </main>
-
-      {/* Chat Widget */}
-      <ChatWidget />
     </div>
   );
 }
