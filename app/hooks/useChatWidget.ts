@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { pusherClient, PUSHER_EVENTS} from '@/lib/pusher';
-import { WidgetMessage, WidgetUser } from '../types/widget';
+import { WidgetMessage } from '../types/widget';
 
 export function useChatWidget() {
   const [messages, setMessages] = useState<WidgetMessage[]>([]);
