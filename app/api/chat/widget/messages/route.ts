@@ -3,7 +3,6 @@ import { pusherServer, PUSHER_EVENTS, PUSHER_CHANNELS } from '@/lib/pusher';
 import { prisma } from '@/lib/prisma';
 import { getClientIp } from '@/lib/utils/ip';
 
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -75,43 +74,26 @@ export async function POST(request: NextRequest) {
     // Broadcast to admin channel
     await pusherServer.trigger(
       PUSHER_CHANNELS.CHAT,
-      PUSHER_EVENTS.MESSAGE_RECEIVED,
+      PUSHER_EVENTS.CONVERSATIONS_UPDATED,
       {
-        id: message.id,
-        content: message.content,
-        sender: message.sender,
-        timestamp: message.timestamp,
-        conversationId: conversation.id,
-        platform: 'WIDGET',
-        chatId: ip,
-        status: 'DELIVERED'
+        conversations: await prisma.conversation.findMany({
+          where: {
+            platform: 'WIDGET'
+          },
+          include: {
+            messages: {
+              orderBy: {
+                timestamp: 'desc'
+              }
+            }
+          },
+          orderBy: {
+            updatedAt: 'desc'
+          }
+        })
       }
     );
 
-    // Get updated conversation with messages
-    const updatedConversation = await prisma.conversation.findUnique({
-      where: { id: conversation.id },
-      include: {
-        messages: {
-          orderBy: { timestamp: 'desc' }
-        }
-      }
-    });
-
-    // Broadcast conversation update to admin channel
-    if (updatedConversation) {
-      await pusherServer.trigger(
-        PUSHER_CHANNELS.CHAT,
-        PUSHER_EVENTS.CONVERSATION_UPDATED,
-        {
-          ...updatedConversation,
-          messages: updatedConversation.messages.map(msg => ({
-            ...msg,
-            timestamp: msg.timestamp.toISOString()
-          }))
-        }
-      );
-    }
 
     return NextResponse.json(message);
   } catch (error) {
