@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { FadeIn } from './animations/FadeIn';
 import { GradientText } from './animations/GradientText';
+import { ChatWidget } from '@/app/components/chat/widget/ChatWidget';
 
 export function HeroSection() {
   return (
@@ -41,6 +42,7 @@ export function HeroSection() {
           </FadeIn>
         </div>
       </div>
+      <ChatWidget />
     </div>
   );
 }
