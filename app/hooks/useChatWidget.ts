@@ -101,7 +101,7 @@ export function useChatWidget() {
       userIp = storedIp;
     }
     
-    const userId = `widget-${userIp}`;
+    const userId = `widget-user-${userIp}`;
 
     const tempMessage: WidgetMessage = {
       id: `temp-${Date.now()}-${Math.random()}`,
@@ -121,7 +121,7 @@ export function useChatWidget() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           content,
-          userId,
+          userId: userId,
           platform: 'WIDGET' 
         })
       });
