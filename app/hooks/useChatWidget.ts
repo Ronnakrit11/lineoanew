@@ -54,25 +54,20 @@ export function useChatWidget() {
       setIsConnected(true);
     });
 
-    channel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, (messages: WidgetMessage | WidgetMessage[]) => {
-      const messageArray = Array.isArray(messages) ? messages : [messages];
-      
+    channel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, (message: WidgetMessage) => {
       setMessages(prev => {
-        const newMessages = messageArray.filter(message => {
-          const exists = prev.some(m => {
-            if (m.id === message.id) return true;
-            if (message.sender === 'USER' && m.id.startsWith('temp-') && m.content === message.content) return true;
-            return false;
-          });
-          return !exists;
+        const exists = prev.some(m => {
+          if (m.id === message.id) return true;
+          if (message.sender === 'USER' && m.id.startsWith('temp-') && m.content === message.content) return true;
+          return false;
         });
+        
+        if (exists) return prev;
 
-        if (newMessages.length === 0) return prev;
-
-        return [...prev, ...newMessages.map(msg => ({
-          ...msg,
-          timestamp: new Date(msg.timestamp)
-        }))].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+        return [...prev, {
+          ...message,
+          timestamp: new Date(message.timestamp)
+        }].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       });
     });
 
@@ -101,7 +96,7 @@ export function useChatWidget() {
       userIp = storedIp;
     }
     
-    const userId = `widget-user-${userIp}`;
+    const userId = `widget-${userIp}`;
 
     const tempMessage: WidgetMessage = {
       id: `temp-${Date.now()}-${Math.random()}`,
@@ -121,7 +116,7 @@ export function useChatWidget() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           content,
-          userId: userId,
+          userId,
           platform: 'WIDGET' 
         })
       });

@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
     // Create message in database
     const message = await prisma.message.create({
       data: {
+        id: `msg-${Date.now()}-${Math.random()}`,
         content,
         sender: 'USER',
         platform: 'WIDGET',
@@ -55,37 +56,26 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    // Create bot response
-    const botMessage = await prisma.message.create({
-      data: {
-        content: `Thank you for your message: "${content}"`,
-        sender: 'BOT',
-        platform: 'WIDGET',
-        conversationId: conversation.id,
-        chatId: ip,
-        timestamp: new Date()
-      }
-    });
     // Broadcast to widget channel
     await pusherServer.trigger(
       `private-widget-chat`,
       PUSHER_EVENTS.MESSAGE_RECEIVED,
-      [message, botMessage].map(msg => ({
-        id: msg.id,
-        content: msg.content,
-        sender: msg.sender,
-        timestamp: msg.timestamp,
+      {
+        id: message.id,
+        content: message.content,
+        sender: message.sender,
+        timestamp: message.timestamp,
         conversationId: conversation.id,
         platform: 'WIDGET',
         status: 'DELIVERED'
-      }))
+      }
     );
 
     // Broadcast to admin channel
     await pusherServer.trigger(
       PUSHER_CHANNELS.CHAT,
       PUSHER_EVENTS.MESSAGE_RECEIVED,
-      [message, botMessage]
+      message
     );
 
     // Update conversation timestamp
