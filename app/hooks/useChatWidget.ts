@@ -92,7 +92,7 @@ export function useChatWidget() {
       userIp = storedIp;
     }
     
-    const userId = `widget-user-${userIp}`;
+    const userId = `widget-${userIp}`;
 
     const tempMessage: WidgetMessage = {
       id: `temp-${Date.now()}`,
@@ -110,7 +110,11 @@ export function useChatWidget() {
       const response = await fetch('/api/chat/widget/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
+        body: JSON.stringify({ 
+          content,
+          userId,
+          platform: 'WIDGET' 
+        })
       });
 
       if (!response.ok) throw new Error('Failed to send message');

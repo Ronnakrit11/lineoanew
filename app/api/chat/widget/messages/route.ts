@@ -6,9 +6,8 @@ import { getClientIp } from '@/lib/utils/ip';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { content } = body;
+    const { content, userId, platform } = body;
     const ip = getClientIp(request) || 'unknown';
-    const userId = `widget-user-${ip}`;
 
     if (!content?.trim()) {
       return NextResponse.json(
@@ -22,7 +21,7 @@ export async function POST(request: NextRequest) {
       where: {
         channelId: 'widget',
         userId,
-        platform: 'WIDGET'
+        platform
       },
       include: {
         messages: {
@@ -36,7 +35,7 @@ export async function POST(request: NextRequest) {
         data: {
           channelId: 'widget',
           userId,
-          platform: 'WIDGET'
+          platform
         },
         include: {
           messages: true
