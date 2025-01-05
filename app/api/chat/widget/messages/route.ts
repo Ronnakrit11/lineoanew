@@ -46,7 +46,6 @@ export async function POST(request: NextRequest) {
     // Create message in database
     const message = await prisma.message.create({
       data: {
-        id: `msg-${Date.now()}-${Math.random()}`,
         content,
         sender: 'USER',
         platform: 'WIDGET',
@@ -74,33 +73,26 @@ export async function POST(request: NextRequest) {
     // Broadcast to admin channel
     await pusherServer.trigger(
       PUSHER_CHANNELS.CHAT,
-      PUSHER_EVENTS.MESSAGE_RECEIVED,
-      message
+      PUSHER_EVENTS.CONVERSATIONS_UPDATED,
+      {
+        conversations: await prisma.conversation.findMany({
+          where: {
+            platform: 'WIDGET'
+          },
+          include: {
+            messages: {
+              orderBy: {
+                timestamp: 'desc'
+              }
+            }
+          },
+          orderBy: {
+            updatedAt: 'desc'
+          }
+        })
+      }
     );
 
-    // Update conversation timestamp
-    await prisma.conversation.update({
-      where: { id: conversation.id },
-      data: { updatedAt: new Date() }
-    });
-
-    // Broadcast conversation update
-    const updatedConversation = await prisma.conversation.findUnique({
-      where: { id: conversation.id },
-      include: {
-        messages: {
-          orderBy: { timestamp: 'desc' }
-        }
-      }
-    });
-
-    if (updatedConversation) {
-      await pusherServer.trigger(
-        PUSHER_CHANNELS.CHAT,
-        PUSHER_EVENTS.CONVERSATION_UPDATED,
-        updatedConversation
-      );
-    }
 
     return NextResponse.json(message);
   } catch (error) {
@@ -117,15 +109,12 @@ export async function GET() {
     const messages = await prisma.conversation.findMany({
       where: {
         channelId: 'widget',
-        platform: 'WIDGET',
-        messages: {
-          some: {} // Only get conversations with messages
-        }
+        platform: 'WIDGET'
       },
       include: {
         messages: {
           orderBy: {
-            timestamp: 'asc'
+            timestamp: 'desc'
           }
         }
       },

@@ -18,7 +18,7 @@ export const useChatState = create<ChatState>((set, get) => ({
 
   setConversations: (conversations) => 
     set({ 
-      conversations: sortConversations(conversations.filter(conv => conv && (conv.platform === 'LINE' || conv.platform === 'WIDGET'))),
+      conversations: sortConversations(conversations.filter(conv => conv)),
       // Clear selected conversation if it was deleted
       selectedConversation: null 
     }),

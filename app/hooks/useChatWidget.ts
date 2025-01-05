@@ -6,13 +6,10 @@ import { Message } from '@prisma/client';
 export function useChatWidget() {
   const [messages, setMessages] = useState<WidgetMessage[]>([]);
   const [isConnected, setIsConnected] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     async function fetchMessages() {
       try {
-        if (isInitialized) return;
-
         const ipResponse = await fetch('/api/chat/widget/ip');
         const { ip } = await ipResponse.json();
         localStorage.setItem('widget_user_ip', ip);
@@ -38,14 +35,13 @@ export function useChatWidget() {
         setMessages(formattedMessages.sort((a: WidgetMessage, b: WidgetMessage) => 
           a.timestamp.getTime() - b.timestamp.getTime()
         ));
-        setIsInitialized(true);
       } catch (error) {
         console.error('Error fetching messages:', error);
       }
     }
 
     fetchMessages();
-  }, [isInitialized]);
+  }, []);
 
   useEffect(() => {
     const channel = pusherClient.subscribe(`private-widget-chat`);
@@ -99,7 +95,7 @@ export function useChatWidget() {
     const userId = `widget-${userIp}`;
 
     const tempMessage: WidgetMessage = {
-      id: `temp-${Date.now()}-${Math.random()}`,
+      id: `temp-${Date.now()}`,
       content,
       sender: 'USER',
       timestamp: new Date(),

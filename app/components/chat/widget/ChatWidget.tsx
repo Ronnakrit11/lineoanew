@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Smile } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -9,20 +9,9 @@ import { ChatMessage } from './ChatMessage';
 import { ChatHeader } from '@/app/components/chat/widget/ChatHeader';
 
 export function ChatWidget() {
-  const [isOpen, setIsOpen] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = sessionStorage.getItem('widget-chat-open');
-      return stored === 'true';
-    }
-    return false;
-  });
+  const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
   const { messages, sendMessage, isConnected } = useChatWidget();
-
-  // Persist open state
-  useEffect(() => {
-    sessionStorage.setItem('widget-chat-open', isOpen.toString());
-  }, [isOpen]);
 
   const handleSend = () => {
     if (message.trim()) {
