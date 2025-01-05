@@ -18,7 +18,7 @@ export const useChatState = create<ChatState>((set, get) => ({
 
   setConversations: (conversations) => 
     set({ 
-      conversations: sortConversations(conversations.filter(conv => conv !== null)),
+      conversations: sortConversations(conversations.filter(conv => conv)),
       // Clear selected conversation if it was deleted
       selectedConversation: null 
     }),
@@ -85,7 +85,6 @@ export const useChatState = create<ChatState>((set, get) => ({
   refreshConversations: async () => {
     try {
       const response = await fetch('/api/webhooks/conversations', {
-        method: 'GET',
         headers: {
           'Authorization': `Bearer ${process.env.API_SECRET_KEY}`
         }
@@ -93,12 +92,7 @@ export const useChatState = create<ChatState>((set, get) => ({
       
       if (!response.ok) throw new Error('Failed to fetch conversations');
       
-      let conversations = await response.json();
-      
-      // Filter out any null/undefined conversations and widget platform
-      conversations = conversations.filter((conv: { platform: string; }) => 
-        conv && conv.platform !== 'WIDGET'
-      );
+      const conversations = await response.json();
 
       const formattedConversations = conversations.map((conv: any) => ({
         ...conv,
