@@ -54,20 +54,25 @@ export function useChatWidget() {
       setIsConnected(true);
     });
 
-    channel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, (message: WidgetMessage) => {
+    channel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, (messages: WidgetMessage | WidgetMessage[]) => {
+      const messageArray = Array.isArray(messages) ? messages : [messages];
+      
       setMessages(prev => {
-        const exists = prev.some(m => {
-          if (m.id === message.id) return true;
-          if (message.sender === 'USER' && m.id.startsWith('temp-') && m.content === message.content) return true;
-          return false;
+        const newMessages = messageArray.filter(message => {
+          const exists = prev.some(m => {
+            if (m.id === message.id) return true;
+            if (message.sender === 'USER' && m.id.startsWith('temp-') && m.content === message.content) return true;
+            return false;
+          });
+          return !exists;
         });
-        
-        if (exists) return prev;
 
-        return [...prev, {
-          ...message,
-          timestamp: new Date(message.timestamp)
-        }].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+        if (newMessages.length === 0) return prev;
+
+        return [...prev, ...newMessages.map(msg => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        }))].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       });
     });
 

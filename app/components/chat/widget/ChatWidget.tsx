@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Smile } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -17,7 +17,19 @@ export function ChatWidget() {
     return false;
   });
   const [message, setMessage] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, sendMessage, isConnected } = useChatWidget();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Scroll to bottom when messages change or chat opens
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom();
+    }
+  }, [messages, isOpen]);
 
   // Persist open state
   useEffect(() => {
@@ -56,10 +68,11 @@ export function ChatWidget() {
             <ChatHeader onClose={() => setIsOpen(false)} isConnected={isConnected} />
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={messagesEndRef}>
               {messages.map((msg) => (
                 <ChatMessage key={msg.id} message={msg} />
               ))}
+              <div ref={messagesEndRef} />
             </div>
 
             {/* Input Area */}
