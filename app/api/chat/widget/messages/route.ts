@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
     // Create message in database
     const message = await prisma.message.create({
       data: {
+        id: `msg-${Date.now()}-${Math.random()}`,
         content,
         sender: 'USER',
         platform: 'WIDGET',
@@ -116,12 +117,15 @@ export async function GET() {
     const messages = await prisma.conversation.findMany({
       where: {
         channelId: 'widget',
-        platform: 'WIDGET'
+        platform: 'WIDGET',
+        messages: {
+          some: {} // Only get conversations with messages
+        }
       },
       include: {
         messages: {
           orderBy: {
-            timestamp: 'desc'
+            timestamp: 'asc'
           }
         }
       },
