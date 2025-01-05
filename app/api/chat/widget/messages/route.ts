@@ -73,26 +73,33 @@ export async function POST(request: NextRequest) {
     // Broadcast to admin channel
     await pusherServer.trigger(
       PUSHER_CHANNELS.CHAT,
-      PUSHER_EVENTS.CONVERSATIONS_UPDATED,
-      {
-        conversations: await prisma.conversation.findMany({
-          where: {
-            platform: 'WIDGET'
-          },
-          include: {
-            messages: {
-              orderBy: {
-                timestamp: 'desc'
-              }
-            }
-          },
-          orderBy: {
-            updatedAt: 'desc'
-          }
-        })
-      }
+      PUSHER_EVENTS.MESSAGE_RECEIVED,
+      message
     );
 
+    // Update conversation timestamp
+    await prisma.conversation.update({
+      where: { id: conversation.id },
+      data: { updatedAt: new Date() }
+    });
+
+    // Broadcast conversation update
+    const updatedConversation = await prisma.conversation.findUnique({
+      where: { id: conversation.id },
+      include: {
+        messages: {
+          orderBy: { timestamp: 'desc' }
+        }
+      }
+    });
+
+    if (updatedConversation) {
+      await pusherServer.trigger(
+        PUSHER_CHANNELS.CHAT,
+        PUSHER_EVENTS.CONVERSATION_UPDATED,
+        updatedConversation
+      );
+    }
 
     return NextResponse.json(message);
   } catch (error) {

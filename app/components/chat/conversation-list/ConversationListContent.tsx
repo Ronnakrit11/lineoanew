@@ -26,7 +26,7 @@ export function ConversationListContent({
   return (
     <ScrollArea className="flex-1">
       <div className="divide-y divide-slate-200">
-        {conversations.map((conversation) => (
+        {conversations.filter(conv => conv.platform === 'LINE' || conv.platform === 'WIDGET').map((conversation) => (
           <React.Fragment key={conversation.id}>
             <ConversationPreview
               conversation={conversation}
