@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Smile } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -61,13 +61,15 @@ export function ChatWidget() {
   useEffect(() => {
     if (!isOpen) return;
 
-    const channel = pusherClient.subscribe(`private-widget-chat`);
+    // Subscribe to both channels for complete message coverage
+    const widgetChannel = pusherClient.subscribe(`private-widget-chat`);
+    const chatChannel = pusherClient.subscribe('private-chat');
 
-    channel.bind('pusher:subscription_succeeded', () => {
+    widgetChannel.bind('pusher:subscription_succeeded', () => {
       setIsConnected(true);
     });
 
-    channel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, (message: WidgetMessage) => {
+    const handleNewMessage = (message: WidgetMessage) => {
       setMessages(prev => {
         // Check if message already exists
         const exists = prev.some(m => 
@@ -83,11 +85,17 @@ export function ChatWidget() {
           timestamp: new Date(message.timestamp)
         }].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
       });
-    });
+    };
+
+    // Listen for messages on both channels
+    widgetChannel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, handleNewMessage);
+    chatChannel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, handleNewMessage);
 
     return () => {
-      channel.unbind_all();
-      pusherClient.unsubscribe(`private-widget-chat`);
+      widgetChannel.unbind_all();
+      chatChannel.unbind_all();
+      pusherClient.unsubscribe('private-widget-chat');
+      pusherClient.unsubscribe('private-chat');
     };
   }, [isOpen]);
 
