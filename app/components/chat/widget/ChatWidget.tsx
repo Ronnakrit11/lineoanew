@@ -1,17 +1,144 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MessageCircle, X, Send, Smile } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useChatWidget } from '@/app/hooks/useChatWidget';
+import { pusherClient, PUSHER_EVENTS } from '@/lib/pusher';
+import { WidgetMessage } from '@/app/types/widget';
 import { ChatMessage } from './ChatMessage';
 import { ChatHeader } from '@/app/components/chat/widget/ChatHeader';
 
 export function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState('');
-  const { messages, sendMessage, isConnected } = useChatWidget();
+  const [messages, setMessages] = useState<WidgetMessage[]>([]);
+  const [isConnected, setIsConnected] = useState(false);
+  const [userIp, setUserIp] = useState<string | null>(null);
+
+  // Initialize chat and fetch messages
+  useEffect(() => {
+    async function initializeChat() {
+      try {
+        // Get client IP
+        const ipResponse = await fetch('/api/chat/widget/ip');
+        const { ip } = await ipResponse.json();
+        setUserIp(ip);
+        localStorage.setItem('widget_user_ip', ip);
+
+        // Fetch existing messages
+        const response = await fetch('/api/chat/widget/messages');
+        if (!response.ok) throw new Error('Failed to fetch messages');
+        const data = await response.json();
+        
+        // Format and sort messages
+        const formattedMessages = data.conversations.flatMap((conv: any) => 
+          conv.messages.map((msg: any) => ({
+            id: msg.id,
+            content: msg.content,
+            sender: msg.sender,
+            timestamp: new Date(msg.timestamp),
+            status: 'DELIVERED',
+            userId: conv.userId,
+            ip: conv.chatId || ip
+          }))
+        ).sort((a: WidgetMessage, b: WidgetMessage) => 
+          a.timestamp.getTime() - b.timestamp.getTime()
+        );
+
+        setMessages(formattedMessages);
+      } catch (error) {
+        console.error('Error initializing chat:', error);
+      }
+    }
+
+    if (isOpen) {
+      initializeChat();
+    }
+  }, [isOpen]);
+
+  // Set up Pusher subscription
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const channel = pusherClient.subscribe(`private-widget-chat`);
+
+    channel.bind('pusher:subscription_succeeded', () => {
+      setIsConnected(true);
+    });
+
+    channel.bind(PUSHER_EVENTS.MESSAGE_RECEIVED, (message: WidgetMessage) => {
+      setMessages(prev => {
+        // Check if message already exists
+        const exists = prev.some(m => 
+          m.id === message.id || 
+          (message.sender === 'USER' && m.id.startsWith('temp-') && m.content === message.content)
+        );
+        
+        if (exists) return prev;
+
+        // Add new message and sort
+        return [...prev, {
+          ...message,
+          timestamp: new Date(message.timestamp)
+        }].sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+      });
+    });
+
+    return () => {
+      channel.unbind_all();
+      pusherClient.unsubscribe(`private-widget-chat`);
+    };
+  }, [isOpen]);
+
+  const sendMessage = async (content: string) => {
+    if (!userIp || !content.trim()) return;
+
+    const userId = `widget-${userIp}`;
+    const tempId = `temp-${Date.now()}`;
+
+    // Add temporary message
+    const tempMessage: WidgetMessage = {
+      id: tempId,
+      content,
+      sender: 'USER',
+      timestamp: new Date(),
+      status: 'SENT',
+      userId,
+      ip: userIp
+    };
+
+    setMessages(prev => [...prev, tempMessage]);
+
+    try {
+      const response = await fetch('/api/chat/widget/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          content,
+          userId,
+          platform: 'WIDGET' 
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to send message');
+
+      // Update temp message status
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId 
+          ? { ...msg, status: 'DELIVERED' as const }
+          : msg
+      ));
+    } catch (error) {
+      console.error('Error sending message:', error);
+      // Show error state for failed message
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId 
+          ? { ...msg, status: 'ERROR' as const }
+          : msg
+      ));
+    }
+  };
 
   const handleSend = () => {
     if (message.trim()) {
