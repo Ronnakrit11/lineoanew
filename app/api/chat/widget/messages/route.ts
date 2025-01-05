@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { pusherServer, PUSHER_EVENTS, PUSHER_CHANNELS } from '@/lib/pusher';
 import { prisma } from '@/lib/prisma';
 import { getClientIp } from '@/lib/utils/ip';
+import { chunkMessage } from '@/lib/utils/messageChunking';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +16,9 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Chunk large messages if needed
+    const messageChunks = chunkMessage(content);
 
     // Find or create widget conversation
     let conversation = await prisma.conversation.findFirst({
@@ -44,26 +48,29 @@ export async function POST(request: NextRequest) {
     }
 
     // Create message in database
-    const message = await prisma.message.create({
+    const messagePromises = messageChunks.map(chunk => prisma.message.create({
       data: {
-        content,
+        content: chunk,
         sender: 'USER',
         platform: 'WIDGET',
         conversationId: conversation.id,
         chatId: ip,
         timestamp: new Date()
       }
-    });
+    }));
+
+    const messages = await Promise.all(messagePromises);
+    const primaryMessage = messages[0]; // Use first chunk as primary message
 
     // Broadcast to widget channel
     await pusherServer.trigger(
       `private-widget-chat`,
       PUSHER_EVENTS.MESSAGE_RECEIVED,
       {
-        id: message.id,
-        content: message.content,
-        sender: message.sender,
-        timestamp: message.timestamp,
+        id: primaryMessage.id,
+        content: content, // Send full content
+        sender: primaryMessage.sender,
+        timestamp: primaryMessage.timestamp,
         conversationId: conversation.id,
         platform: 'WIDGET',
         status: 'DELIVERED'
@@ -94,7 +101,14 @@ export async function POST(request: NextRequest) {
     );
 
 
-    return NextResponse.json(message);
+    return NextResponse.json({
+      id: primaryMessage.id,
+      content: content,
+      sender: primaryMessage.sender,
+      timestamp: primaryMessage.timestamp,
+      conversationId: conversation.id,
+      status: 'DELIVERED'
+    });
   } catch (error) {
     console.error('Error handling widget message:', error);
     return NextResponse.json(
