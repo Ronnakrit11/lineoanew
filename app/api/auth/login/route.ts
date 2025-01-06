@@ -13,7 +13,10 @@ export async function POST(request: NextRequest) {
       username === process.env.ADMIN_USERNAME &&
       password === process.env.ADMIN_PASSWORD
     ) {
-      const token = await createToken({ username });
+      // Create token with username and default tenant
+      const token = await createToken({ 
+        username
+      });
 
       // Set cookie with updated options
       cookies().set(AUTH_COOKIE_NAME, token, COOKIE_OPTIONS);
