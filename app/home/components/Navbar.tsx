@@ -1,9 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SignUpDialog } from './SignUpDialog';
 
 const navLinks = [
   { href: '#', label: 'Products' },
@@ -14,6 +15,11 @@ const navLinks = [
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSignUpOpen, setIsSignUpOpen] = useState(false);
+
+  const handleSignUpClick = useCallback(() => {
+    setIsSignUpOpen(true);
+  }, []);
 
   return (
     <nav className="fixed w-full z-50 backdrop-blur-md bg-black/30 border-b border-white/10">
@@ -43,6 +49,12 @@ export function Navbar() {
             >
               Login
             </Link>
+            <button
+              onClick={handleSignUpClick}
+              className="backdrop-blur-sm bg-primary/80 hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-all duration-300 border border-primary/50"
+            >
+              Sign Up
+            </button>
           </div>
 
           {/* Mobile menu button */}
@@ -89,10 +101,21 @@ export function Navbar() {
               >
                 Login
               </Link>
+              <button
+                onClick={handleSignUpClick}
+                className="block w-full px-3 py-2 text-base font-medium text-white bg-primary/80 hover:bg-primary/90 rounded-md transition-colors mt-2"
+              >
+                Sign Up
+              </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SignUpDialog 
+        isOpen={isSignUpOpen}
+        onClose={() => setIsSignUpOpen(false)}
+      />
     </nav>
   );
 }
