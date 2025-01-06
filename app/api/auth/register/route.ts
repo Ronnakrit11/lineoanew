@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { createToken } from '@/lib/auth/token';
 import { AUTH_COOKIE_NAME, COOKIE_OPTIONS } from '@/lib/auth/constants';
 import { cookies } from 'next/headers';
+import { hashPassword } from '@/lib/auth/password';
 
 const prisma = new PrismaClient();
 
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
     const user = await prisma.user.create({
       data: {
         username,
-        password // In a real app, hash the password first!
+        password: await hashPassword(password)
       }
     });
     
