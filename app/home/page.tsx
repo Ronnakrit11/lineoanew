@@ -1,5 +1,6 @@
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
+import { FeatureSection } from './components/FeatureSection';
 import { PricingCard } from './components/PricingCard';
 import { FadeIn } from './components/animations/FadeIn';
 import { FloatingCard } from './components/animations/FloatingCard';
@@ -63,6 +64,9 @@ export default function HomePage() {
       <main className="pt-16">
         {/* Hero Section */}
         <HeroSection />
+
+        {/* Feature Section */}
+        <FeatureSection />
 
         {/* Trusted By Section */}
         <FadeIn delay={0.6}>
