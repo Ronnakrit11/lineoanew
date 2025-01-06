@@ -14,10 +14,30 @@ model User {
   id        String   @id @default(cuid())
   username  String   @unique
   password  String
+  role      UserRole @default(USER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  // Tenant relationships
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
+  tenantId  String?
 
   @@index([username])
+}
+
+model Tenant {
+  id          String   @id @default(cuid())
+  name        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  users       User[]
+  lineAccounts LineAccount[]
+  quotations  Quotation[]
+  invoices    Invoice[]
+
+  @@index([name])
 }
 
 model UserProfile {
@@ -49,6 +69,8 @@ model LineAccount {
   conversations     Conversation[]
   quotations       Quotation[]
   invoices         Invoice[]
+  tenant           Tenant         @relation(fields: [tenantId], references: [id])
+  tenantId         String
 
   @@index([id,name])
 
@@ -110,6 +132,8 @@ model Quotation {
   lineAccountId String
   invoice       Invoice?       @relation(fields: [invoiceId], references: [id])
   invoiceId     String?
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  tenantId      String
 
   @@index([lineAccountId])
   @@index([createdAt])
@@ -145,6 +169,8 @@ model Invoice {
   quotations    Quotation[]
   lineAccount   LineAccount    @relation(fields: [lineAccountId], references: [id])
   lineAccountId String
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  tenantId      String
 
   @@index([lineAccountId])
   @@index([createdAt])
@@ -171,6 +197,11 @@ enum Platform {
   LINE
   FACEBOOK
   WIDGET
+}
+
+enum UserRole {
+  ADMIN
+  USER
 }
 
 enum SenderType {

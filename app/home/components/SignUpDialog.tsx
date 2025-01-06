@@ -18,6 +18,7 @@ interface SignUpDialogProps {
 export function SignUpDialog({ isOpen, onClose }: SignUpDialogProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [tenantName, setTenantName] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -31,7 +32,7 @@ export function SignUpDialog({ isOpen, onClose }: SignUpDialogProps) {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username, password, tenantName }),
       });
 
       const data = await response.json();
@@ -62,6 +63,19 @@ export function SignUpDialog({ isOpen, onClose }: SignUpDialogProps) {
               {error}
             </div>
           )}
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-600">
+              Company/Organization Name
+            </label>
+            <input
+              type="text"
+              value={tenantName}
+              onChange={(e) => setTenantName(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              required
+            />
+          </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-600">
