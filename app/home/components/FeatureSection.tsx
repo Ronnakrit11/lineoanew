@@ -5,7 +5,7 @@ import {
   Bot, 
   MessageSquare, 
   FileText, 
-  Globe, 
+ 
   Zap,
   Shield,
   RefreshCw,

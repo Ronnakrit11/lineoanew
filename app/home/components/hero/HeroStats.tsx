@@ -15,7 +15,7 @@ export function HeroStats() {
       transition={{ delay: 0.4 }}
       className="flex flex-wrap justify-center gap-8 mt-12"
     >
-      {stats.map((stat, index) => (
+      {stats.map((stat) => (
         <div key={stat.label} className="text-center">
           <p className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
             {stat.value}
