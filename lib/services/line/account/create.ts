@@ -1,32 +1,17 @@
 import { PrismaClient } from '@prisma/client';
 import { LineAccountCreateParams, LineAccountResult } from './types';
 import { LineAccount } from '@/app/types/line';
-import authContext from '@/lib/auth/context';
 
 const prisma = new PrismaClient();
 
-export async function createLineAccount(
-  params: LineAccountCreateParams
-): Promise<LineAccountResult> {
+export async function createLineAccount(params: LineAccountCreateParams): Promise<LineAccountResult> {
   try {
-    const tenantId = authContext.getCurrentTenantId();
-    
-    if (!tenantId) {
-      return {
-        success: false,
-        error: 'Tenant ID not found'
-      };
-    }
-
     const account = await prisma.lineAccount.create({
       data: {
-        ...params,
-        active: true,
-        tenant: {
-          connect: {
-            id: tenantId
-          }
-        }
+        name: params.name,
+        channelAccessToken: params.channelAccessToken,
+        channelSecret: params.channelSecret,
+        active: true
       },
       select: {
         id: true,
