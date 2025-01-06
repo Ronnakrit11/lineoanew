@@ -10,16 +10,6 @@ generator client {
 }
 
 // ======= Authentication & User Models =======
-model User {
-  id        String   @id @default(cuid())
-  username  String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([username])
-}
-
 model UserProfile {
   userId        String
   platform      Platform
@@ -113,7 +103,7 @@ model Quotation {
 
   @@index([lineAccountId])
   @@index([createdAt])
-  @@index([customerName, total])
+  @@index([customerName,total])
 }
 
 model QuotationItem {

@@ -4,13 +4,13 @@ import { LineAccount } from '@/app/types/line';
 
 const prisma = new PrismaClient();
 
-export async function createLineAccount(params: LineAccountCreateParams): Promise<LineAccountResult> {
+export async function createLineAccount(
+  params: LineAccountCreateParams
+): Promise<LineAccountResult> {
   try {
     const account = await prisma.lineAccount.create({
       data: {
-        name: params.name,
-        channelAccessToken: params.channelAccessToken,
-        channelSecret: params.channelSecret,
+        ...params,
         active: true
       },
       select: {
