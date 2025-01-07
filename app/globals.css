@@ -26,7 +26,6 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-geist-sans);
-  scroll-behavior: smooth;
 }
 
 .typing-indicator span {

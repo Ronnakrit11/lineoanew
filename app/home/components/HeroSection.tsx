@@ -1,27 +1,47 @@
-import { HeroTitle } from './hero/HeroTitle';
-import { HeroActions } from './hero/HeroActions';
-import { HeroStats } from './hero/HeroStats';
+import Link from 'next/link';
+import { FadeIn } from './animations/FadeIn';
+import { GradientText } from './animations/GradientText';
 import { ChatWidget } from '@/app/components/chat/widget/ChatWidget';
 
 export function HeroSection() {
   return (
-    <div className="relative min-h-[80vh] flex items-center">
-      {/* Background Effects */}
-      <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-600/20 via-transparent to-transparent" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(120,119,198,0.15),transparent)]" />
-      </div>
+    <div className="relative">
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-600/20 via-transparent to-transparent" />
       
-      {/* Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-32">
-        <div className="flex flex-col items-center">
-          <HeroTitle />
-          <HeroActions />
-          <HeroStats />
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32">
+        <div className="backdrop-blur-lg bg-black/30 rounded-2xl p-8 border border-white/10">
+          <FadeIn>
+            <h1 className="text-6xl font-bold text-center mb-8">
+              <GradientText>
+                All Chat, Website and Marketing
+              </GradientText>
+            </h1>
+          </FadeIn>
+
+          <FadeIn delay={0.2}>
+            <p className="text-xl text-gray-300 mb-12 max-w-3xl mx-auto text-center">
+              onchain tools to build complete web3 apps — on every EVM chain.
+            </p>
+          </FadeIn>
+
+          <FadeIn delay={0.4}>
+            <div className="flex justify-center gap-4">
+              <Link 
+                href="#"
+                className="backdrop-blur-sm bg-white/10 text-white px-6 py-3 rounded-lg font-medium hover:bg-white/20 transition-all duration-300 border border-white/20 hover:border-white/30 inline-flex items-center"
+              >
+             Started <span className="ml-2">→</span>
+              </Link>
+              <Link 
+                href="#"
+                className="backdrop-blur-sm bg-black/30 text-white px-6 py-3 rounded-lg font-medium hover:bg-black/40 transition-all duration-300 border border-white/10 hover:border-white/20 inline-flex items-center"
+              >
+                Contact
+              </Link>
+            </div>
+          </FadeIn>
         </div>
       </div>
-
-      {/* Chat Widget */}
       <ChatWidget />
     </div>
   );
