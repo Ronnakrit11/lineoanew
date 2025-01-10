@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 
-import {  Store, Building2 } from 'lucide-react';
+import {   Building2 } from 'lucide-react';
 import { CldImage } from 'next-cloudinary';
 import { useLineAccount } from '@/app/hooks/useLineAccount';
 import { Quotation } from '@/app/types/quotation';
