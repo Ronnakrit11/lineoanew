@@ -15,28 +15,6 @@ interface ViewQuotationDialogProps {
 export function ViewQuotationDialog({ quotation, isOpen, onClose }: ViewQuotationDialogProps) {
   const { account } = useLineAccount(quotation.lineAccountId);
 
-  const renderAccountLogo = () => {
-    if (account?.imageUrl) {
-      return (
-        <div className="w-16 h-16 rounded-lg overflow-hidden border border-slate-200">
-          <CldImage
-            src={account.imageUrl}
-            alt={account.name || 'LINE Account'}
-            width={64}
-            height={64}
-            crop="fill"
-            gravity="auto"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      );
-    }
-    return (
-      <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 border border-slate-200">
-        <Store className="w-8 h-8" />
-      </div>
-    );
-  };
 
   const renderCompanyImage = () => {
     if (account?.imageUrl) {
