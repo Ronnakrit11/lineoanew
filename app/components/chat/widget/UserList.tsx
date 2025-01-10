@@ -12,7 +12,7 @@ export function UserList({ users }: UserListProps) {
   return (
     <div className="w-48 border-l border-slate-200 bg-slate-50 p-4 overflow-y-auto">
       <div className="space-y-4">
-        {/* Online Users */}
+        {/* Online Userks */}
         <div>
           <h3 className="text-xs font-medium text-slate-500 mb-2">
             Online ({onlineUsers.length})
