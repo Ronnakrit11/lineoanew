@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { findLineAccountById, updateLineAccount } from '@/lib/services/line';
+import {  updateLineAccount } from '@/lib/services/line';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(
   _request: NextRequest,
@@ -7,7 +8,18 @@ export async function GET(
 ) {
   try {
     const { id } = params;
-    const account = await findLineAccountById(id);
+    const account = await prisma.lineAccount.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        companyName: true,
+        imageUrl: true,
+        channelAccessToken: true,
+        channelSecret: true,
+        active: true
+      }
+    });
     
     if (!account) {
       return NextResponse.json(

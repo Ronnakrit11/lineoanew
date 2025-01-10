@@ -36,6 +36,7 @@ export interface LineWebhookBody {
 export interface LineAccount {
   id: string;
   name: string;
+ 
   imageUrl?: string | null;
   companyName?: string | null;
   channelSecret: string;

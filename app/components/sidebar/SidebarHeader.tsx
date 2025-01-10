@@ -23,7 +23,7 @@ export function SidebarHeader({
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 text-primary" />
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">TheNextCrm</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Astra</h2>
           </div>
         </div>
         

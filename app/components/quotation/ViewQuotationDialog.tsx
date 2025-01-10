@@ -1,6 +1,8 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
-import { Printer } from 'lucide-react';
+import { Printer, Store, Building2 } from 'lucide-react';
+import { CldImage } from 'next-cloudinary';
+import { useLineAccount } from '@/app/hooks/useLineAccount';
 import { Quotation } from '@/app/types/quotation';
 import { formatTimestamp } from '@/app/utils/dateFormatter';
 
@@ -11,15 +13,70 @@ interface ViewQuotationDialogProps {
 }
 
 export function ViewQuotationDialog({ quotation, isOpen, onClose }: ViewQuotationDialogProps) {
+  const { account } = useLineAccount(quotation.lineAccountId);
+
+  const renderAccountLogo = () => {
+    if (account?.imageUrl) {
+      return (
+        <div className="w-16 h-16 rounded-lg overflow-hidden border border-slate-200">
+          <CldImage
+            src={account.imageUrl}
+            alt={account.name || 'LINE Account'}
+            width={64}
+            height={64}
+            crop="fill"
+            gravity="auto"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      );
+    }
+    return (
+      <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 border border-slate-200">
+        <Store className="w-8 h-8" />
+      </div>
+    );
+  };
+
+  const renderCompanyImage = () => {
+    if (account?.imageUrl) {
+      return (
+        <div className="w-16 h-16 rounded-lg overflow-hidden border border-slate-200">
+          <CldImage
+            src={account.imageUrl}
+            alt={account.companyName || 'Company'}
+            width={64}
+            height={64}
+            crop="fill"
+            gravity="auto"
+            className="w-full h-full object-cover"
+          />
+        </div>
+      );
+    }
+    return (
+      <div className="w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400 border border-slate-200">
+        <Building2 className="w-8 h-8" />
+      </div>
+    );
+  };
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <DialogTitle>ใบเสนอราคา #{quotation.number}</DialogTitle>
-          <Button variant="outline" size="sm" className="flex items-center gap-2">
-            <Printer className="w-4 h-4" />
-            พิมพ์
-          </Button>
+        <DialogHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex gap-6">
+              {account?.companyName && (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex-shrink-0">
+                    {renderCompanyImage()}
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium">{account.companyName}</p>
+                </div>
+              )}
+            </div>
+            <DialogTitle>ใบเสนอราคา #{quotation.number}</DialogTitle>
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">

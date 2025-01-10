@@ -11,7 +11,7 @@ export function SidebarToggle({ onClick, className }: SidebarToggleProps) {
     <button
       onClick={onClick}
       className={cn(
-        "lg:hidden p-2 hover:bg-foreground/5 rounded-md transition-colors",
+        "lg:hidden p-2 hover:bg-foreground/5 rounded-md transition-colors ",
         "focus:outline-none focus:ring-2 focus:ring-primary/20",
         className
       )}

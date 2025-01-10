@@ -24,7 +24,7 @@ export function Header({ toggleSidebar, title }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-foreground/5 border-b border-foreground/10">
+    <header className="sticky top-0 z-30 bg-foreground/5 border-b border-foreground/10 bg-slate-50">
       <div className="container mx-auto px-4 py-3 sm:py-4 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button

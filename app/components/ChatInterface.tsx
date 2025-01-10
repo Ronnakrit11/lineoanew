@@ -84,10 +84,10 @@ export function ChatInterface({ initialConversations, metrics }: ChatInterfacePr
   const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen ">
       <Header 
         toggleSidebar={toggleSidebar} 
-        title={showLineSettings ? "LINE OA Settings" : showDashboard ? "Dashboard" : "Chat"}
+        title={showLineSettings ? "LINE OA Settings" : showDashboard ? "Logo" : "Chat"}
       />
 
       <div className="flex-1 flex overflow-hidden">
