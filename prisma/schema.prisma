@@ -28,7 +28,7 @@ model LineAccount {
   id                 String         @id @default(cuid())
   name               String
   companyName        String?
- imageUrl           String?
+  imageUrl           String?
   channelAccessToken String         @unique
   channelSecret      String
   active            Boolean        @default(true)
@@ -41,7 +41,23 @@ model LineAccount {
   invoices         Invoice[]
 
   @@index([id,name])
+  @@index([active])
+}
 
+// ======= Facebook Integration Models =======
+model FacebookPage {
+  id           String         @id @default(cuid())
+  pageId       String         @unique
+  name         String
+  accessToken  String
+  active       Boolean        @default(true)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  
+  // Relationships
+  conversations Conversation[]
+
+  @@index([pageId])
   @@index([active])
 }
 
@@ -58,11 +74,15 @@ model Conversation {
   messages      Message[]
   lineAccount   LineAccount? @relation(fields: [lineAccountId], references: [id])
   lineAccountId String?
+  facebookPage  FacebookPage? @relation(fields: [facebookPageId], references: [id])
+  facebookPageId String?
 
-  @@unique([userId, platform, channelId, lineAccountId])
+  // Updated unique constraint to include optional account IDs
+  @@unique([userId, platform, channelId, lineAccountId, facebookPageId])
   @@index([platform, updatedAt])
   @@index([userId, platform])
 }
+
 // Update Message model to include base64 field for images
 model Message {
   id             String       @id @default(cuid())
