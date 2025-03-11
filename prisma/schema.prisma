@@ -77,7 +77,7 @@ model Conversation {
   facebookPage  FacebookPage? @relation(fields: [facebookPageId], references: [id])
   facebookPageId String?
 
-  // Updated unique constraint to include optional account IDs
+  // Updated unique constraint to handle platform-specific uniqueness
   @@unique([userId, platform, channelId, lineAccountId, facebookPageId])
   @@index([platform, updatedAt])
   @@index([userId, platform])
