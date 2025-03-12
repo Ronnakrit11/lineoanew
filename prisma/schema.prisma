@@ -1,8 +1,10 @@
+// Database configuration
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
+// Prisma Client generator
 generator client {
   provider = "prisma-client-js"
 }
@@ -16,6 +18,9 @@ model Admin {
   updatedAt DateTime @updatedAt
   createdBy String?  // ID of admin who created this admin
   
+  // Add relation to assigned conversations
+  assignedConversations ConversationAssignment[]
+
   @@index([username])
   @@index([role])
 }
@@ -81,9 +86,27 @@ model Conversation {
   facebookPage  FacebookPage? @relation(fields: [facebookPageId], references: [id])
   facebookPageId String?
 
+  // Add relation to admin assignments
+  assignments   ConversationAssignment[]
+
   @@unique([userId, platform, channelId, lineAccountId, facebookPageId])
   @@index([platform, updatedAt])
   @@index([userId, platform])
+}
+
+// New model for conversation assignments
+model ConversationAssignment {
+  id             String       @id @default(cuid())
+  admin          Admin        @relation(fields: [adminId], references: [id])
+  adminId        String
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  conversationId String
+  assignedAt     DateTime     @default(now())
+  assignedBy     String      // ID of admin who made the assignment
+
+  @@unique([conversationId, adminId])
+  @@index([adminId])
+  @@index([conversationId])
 }
 
 model Message {

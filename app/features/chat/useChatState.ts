@@ -16,12 +16,39 @@ export const useChatState = create<ChatState>((set, get) => ({
   conversations: [],
   selectedConversation: null,
 
-  setConversations: (conversations) => 
-    set({ 
-      conversations: sortConversations(conversations.filter(conv => conv)),
-      // Clear selected conversation if it was deleted
-      selectedConversation: null 
-    }),
+  setConversations: async (conversations) => {
+    try {
+      // Fetch admin role and assignments
+      const response = await fetch('/api/auth/me');
+      const admin = await response.json();
+
+      if (admin.role === 'SUPER_ADMIN') {
+        // Super admin sees all conversations
+        set({ 
+          conversations: sortConversations(conversations.filter(conv => conv)),
+          selectedConversation: null 
+        });
+      } else {
+        // Regular admin only sees assigned conversations
+        const assignedResponse = await fetch('/api/admin/conversations');
+        const assignedConversations = await assignedResponse.json();
+        const assignedIds = new Set(assignedConversations.map((c: any) => c.id));
+
+        const filteredConversations = conversations.filter(conv => 
+          assignedIds.has(conv.id)
+        );
+
+        set({ 
+          conversations: sortConversations(filteredConversations),
+          selectedConversation: null 
+        });
+      }
+    } catch (error) {
+      console.error('Error filtering conversations:', error);
+      // Fallback to showing no conversations on error
+      set({ conversations: [], selectedConversation: null });
+    }
+  },
 
   setSelectedConversation: (conversation) => 
     set({ selectedConversation: conversation }),
@@ -104,18 +131,8 @@ export const useChatState = create<ChatState>((set, get) => ({
         updatedAt: new Date(conv.updatedAt)
       }));
 
-      set({ conversations: sortConversations(formattedConversations) });
-
-      // Update selected conversation if needed
-      const state = get();
-      if (state.selectedConversation) {
-        const updatedSelected = formattedConversations.find(
-          (conv: ConversationWithMessages) => conv.id === state.selectedConversation?.id
-        );
-        if (updatedSelected) {
-          set({ selectedConversation: updatedSelected });
-        }
-      }
+      // Use setConversations to apply admin filtering
+      get().setConversations(formattedConversations);
     } catch (error) {
       console.error('Error refreshing conversations:', error);
     }
