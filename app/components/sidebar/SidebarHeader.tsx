@@ -1,4 +1,4 @@
-import { ChevronLeft, LayoutDashboard, MessageSquare, Settings } from 'lucide-react';
+import { ChevronLeft, LayoutDashboard, MessageSquare, Settings, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { SidebarNavItem } from './SidebarNavItem';
 
@@ -6,16 +6,20 @@ interface SidebarHeaderProps {
   onClose: () => void;
   onDashboardClick: () => void;
   onLineSettingsClick: () => void;
+  onAdminClick: () => void; // Add new prop
   showDashboard: boolean;
   showLineSettings: boolean;
+  showAdmin: boolean; // Add new prop
 }
 
 export function SidebarHeader({ 
   onClose, 
   onDashboardClick, 
   onLineSettingsClick,
+  onAdminClick, // Add new prop
   showDashboard,
-  showLineSettings 
+  showLineSettings,
+  showAdmin // Add new prop
 }: SidebarHeaderProps) {
   return (
     <div className="flex-none p-4 border-b border-slate-200 bg-gradient-to-r from-white to-slate-50">
@@ -58,6 +62,13 @@ export function SidebarHeader({
           label="LINE OA Settings"
           onClick={onLineSettingsClick}
           isActive={showLineSettings}
+        />
+        <SidebarNavItem 
+          href="#" 
+          icon={<Users className="w-5 h-5" />}
+          label="Admin"
+          onClick={onAdminClick}
+          isActive={showAdmin}
         />
       </nav>
     </div>

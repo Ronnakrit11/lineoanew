@@ -14,8 +14,10 @@ interface SidebarProps {
   onClose: () => void;
   onDashboardClick: () => void;
   onLineSettingsClick: () => void;
+  onAdminClick: () => void; // Add new prop
   showDashboard: boolean;
   showLineSettings: boolean;
+  showAdmin: boolean; // Add new prop
 }
 
 export function Sidebar({ 
@@ -26,8 +28,10 @@ export function Sidebar({
   onClose,
   onDashboardClick,
   onLineSettingsClick,
+  onAdminClick, // Add new prop
   showDashboard,
-  showLineSettings
+  showLineSettings,
+  showAdmin // Add new prop
 }: SidebarProps) {
   const showSidebar = isOpen || (typeof window !== 'undefined' && window.innerWidth >= 1024);
 
@@ -57,8 +61,10 @@ export function Sidebar({
               onClose={onClose}
               onDashboardClick={onDashboardClick}
               onLineSettingsClick={onLineSettingsClick}
+              onAdminClick={onAdminClick} // Add new prop
               showDashboard={showDashboard}
               showLineSettings={showLineSettings}
+              showAdmin={showAdmin} // Add new prop
             />
 
             <ConversationList 

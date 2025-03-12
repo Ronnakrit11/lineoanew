@@ -2,18 +2,48 @@ import { NextRequest, NextResponse } from 'next/server';
 import { handleFacebookMessage } from '@/lib/services/facebook/conversation';
 
 export async function GET(request: NextRequest) {
-  const searchParams = request.nextUrl.searchParams;
-  const VERIFY_TOKEN = process.env.FACEBOOK_VERIFY_TOKEN;
-  
-  const mode = searchParams.get('hub.mode');
-  const token = searchParams.get('hub.verify_token');
-  const challenge = searchParams.get('hub.challenge');
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    
+    // Get verification params from query string
+    const mode = searchParams.get('hub.mode');
+    const token = searchParams.get('hub.verify_token');
+    const challenge = searchParams.get('hub.challenge');
 
-  if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-    return new NextResponse(challenge, { status: 200 });
+    // Log verification attempt
+    console.log('Facebook webhook verification:', {
+      mode,
+      token,
+      challenge,
+      expectedToken: process.env.FACEBOOK_VERIFY_TOKEN
+    });
+
+    // Verify token
+    if (mode === 'subscribe' && token === process.env.FACEBOOK_VERIFY_TOKEN) {
+      if (!challenge) {
+        return new NextResponse('Missing challenge', { status: 400 });
+      }
+      
+      // Return challenge string for successful verification
+      return new NextResponse(challenge, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/plain'
+        }
+      });
+    }
+
+    // Return error for failed verification
+    return new NextResponse('Invalid verification token', { 
+      status: 403,
+      headers: {
+        'Content-Type': 'text/plain'
+      }
+    });
+  } catch (error) {
+    console.error('Error in Facebook webhook verification:', error);
+    return new NextResponse('Internal server error', { status: 500 });
   }
-  
-  return new NextResponse('Verification failed', { status: 403 });
 }
 
 export async function POST(request: NextRequest) {

@@ -15,6 +15,7 @@ import { ChatHeader } from './chat/ChatHeader';
 import { LineAccountStatus } from './line-account/LineAccountStatus';
 import { MetricsContainer } from './dashboard/metrics/MetricsContainer';
 import { LineAccountSettingsPage } from './line-account/settings/LineAccountSettingsPage';
+import { AdminPage } from './admin';
 
 interface ChatInterfaceProps {
   initialConversations: SerializedConversation[];
@@ -33,6 +34,7 @@ export function ChatInterface({ initialConversations, metrics }: ChatInterfacePr
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showDashboard, setShowDashboard] = useState(true);
   const [showLineSettings, setShowLineSettings] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
 
   const handleSendMessage = async (content: string) => {
     if (selectedConversation) {
@@ -57,6 +59,8 @@ export function ChatInterface({ initialConversations, metrics }: ChatInterfacePr
   const handleConversationSelect = (conversation: typeof selectedConversation) => {
     setSelectedConversation(conversation);
     setShowDashboard(false);
+    setShowLineSettings(false);
+    setShowAdmin(false);
     if (window.innerWidth < 1024) {
       setIsSidebarOpen(false);
     }
@@ -66,6 +70,7 @@ export function ChatInterface({ initialConversations, metrics }: ChatInterfacePr
     setSelectedConversation(null);
     setShowDashboard(true);
     setShowLineSettings(false);
+    setShowAdmin(false);
     if (window.innerWidth < 1024) {
       setIsSidebarOpen(false);
     }
@@ -75,6 +80,17 @@ export function ChatInterface({ initialConversations, metrics }: ChatInterfacePr
     setSelectedConversation(null);
     setShowDashboard(false);
     setShowLineSettings(true);
+    setShowAdmin(false);
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  };
+
+  const handleAdminClick = () => {
+    setSelectedConversation(null);
+    setShowDashboard(false);
+    setShowLineSettings(false);
+    setShowAdmin(true);
     if (window.innerWidth < 1024) {
       setIsSidebarOpen(false);
     }
@@ -84,10 +100,10 @@ export function ChatInterface({ initialConversations, metrics }: ChatInterfacePr
   const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
-    <div className="flex flex-col h-screen ">
+    <div className="flex flex-col h-screen">
       <Header 
         toggleSidebar={toggleSidebar} 
-        title={showLineSettings ? "LINE OA Settings" : showDashboard ? "Logo" : "Chat"}
+        title={showAdmin ? "Admin Management" : showLineSettings ? "LINE OA Settings" : showDashboard ? "Logo" : "Chat"}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -99,8 +115,10 @@ export function ChatInterface({ initialConversations, metrics }: ChatInterfacePr
           onClose={closeSidebar}
           onDashboardClick={handleDashboardClick}
           onLineSettingsClick={handleLineSettingsClick}
+          onAdminClick={handleAdminClick}
           showDashboard={showDashboard}
           showLineSettings={showLineSettings}
+          showAdmin={showAdmin}
         />
 
         <Separator orientation="vertical" className="hidden lg:block" />
@@ -126,7 +144,11 @@ export function ChatInterface({ initialConversations, metrics }: ChatInterfacePr
             </>
           ) : showLineSettings ? (
             <div className="flex-1 flex flex-col bg-slate-50 overflow-auto">
-             <LineAccountSettingsPage/>
+              <LineAccountSettingsPage/>
+            </div>
+          ) : showAdmin ? (
+            <div className="flex-1 flex flex-col bg-slate-50 overflow-auto">
+              <AdminPage />
             </div>
           ) : showDashboard ? (
             <div className="flex-1 flex flex-col bg-slate-50 overflow-auto">

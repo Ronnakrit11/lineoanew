@@ -1,15 +1,25 @@
-// Database configuration
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// Prisma Client generator
 generator client {
   provider = "prisma-client-js"
 }
 
-// ======= Authentication & User Models =======
+model Admin {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String
+  role      AdminRole @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?  // ID of admin who created this admin
+  
+  @@index([username])
+  @@index([role])
+}
+
 model UserProfile {
   userId        String
   platform      Platform
@@ -23,7 +33,6 @@ model UserProfile {
   @@index([platform, updatedAt])
 }
 
-// ======= LINE Integration Models =======
 model LineAccount {
   id                 String         @id @default(cuid())
   name               String
@@ -35,7 +44,6 @@ model LineAccount {
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   
-  // Relationships
   conversations     Conversation[]
   quotations       Quotation[]
   invoices         Invoice[]
@@ -44,7 +52,6 @@ model LineAccount {
   @@index([active])
 }
 
-// ======= Facebook Integration Models =======
 model FacebookPage {
   id           String         @id @default(cuid())
   pageId       String         @unique
@@ -54,14 +61,12 @@ model FacebookPage {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   
-  // Relationships
   conversations Conversation[]
 
   @@index([pageId])
   @@index([active])
 }
 
-// ======= Chat & Messaging Models =======
 model Conversation {
   id            String       @id @default(cuid())
   platform      Platform
@@ -70,20 +75,17 @@ model Conversation {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   
-  // Relationships
   messages      Message[]
   lineAccount   LineAccount? @relation(fields: [lineAccountId], references: [id])
   lineAccountId String?
   facebookPage  FacebookPage? @relation(fields: [facebookPageId], references: [id])
   facebookPageId String?
 
-  // Updated unique constraint to handle platform-specific uniqueness
   @@unique([userId, platform, channelId, lineAccountId, facebookPageId])
   @@index([platform, updatedAt])
   @@index([userId, platform])
 }
 
-// Update Message model to include base64 field for images
 model Message {
   id             String       @id @default(cuid())
   content        String       @db.Text
@@ -95,7 +97,6 @@ model Message {
   chatId         String?      // Specific chat identifier
   imageBase64    String?      @db.Text  // New field for storing base64 image data
   
-  // Relationships
   conversation   Conversation @relation(fields: [conversationId], references: [id])
   conversationId String
 
@@ -104,7 +105,6 @@ model Message {
   @@index([externalId])
 }
 
-// ======= Document Models =======
 model Quotation {
   id            String          @id @default(cuid())
   number        String          @unique
@@ -114,7 +114,6 @@ model Quotation {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   
-  // Relationships
   items         QuotationItem[]
   lineAccount   LineAccount    @relation(fields: [lineAccountId], references: [id])
   lineAccountId String
@@ -133,7 +132,6 @@ model QuotationItem {
   price       Float
   total       Float
   
-  // Relationships
   quotation   Quotation @relation(fields: [quotationId], references: [id])
   quotationId String
 
@@ -150,7 +148,6 @@ model Invoice {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   
-  // Relationships
   items         InvoiceItem[]
   quotations    Quotation[]
   lineAccount   LineAccount    @relation(fields: [lineAccountId], references: [id])
@@ -169,14 +166,17 @@ model InvoiceItem {
   price       Float
   total       Float
   
-  // Relationships
   invoice     Invoice   @relation(fields: [invoiceId], references: [id])
   invoiceId   String
 
   @@index([invoiceId])
 }
 
-// ======= Enums =======
+enum AdminRole {
+  SUPER_ADMIN
+  USER
+}
+
 enum Platform {
   LINE
   FACEBOOK
